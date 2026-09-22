@@ -27,16 +27,21 @@ the order left to right is Health, Social, **Home**, Hobbies, Career Prep.
 | **Hobbies** | Creative hobbies (current + want-to-try) surfaced as a suggestion for the evening BART commute, with an Add Hobby flow |
 | **Career Prep** | Queue of articles and podcasts for interview prep / industry reading, surfaced for the morning BART commute, with an Add Item flow |
 
-See [`docs/PRD.md`](docs/PRD.md) for the full product spec, and the
+See [`docs/PRD.md`](docs/PRD.md) for the full product spec,
+[`docs/SYSTEM_DESIGN.md`](docs/SYSTEM_DESIGN.md) for the architecture
+(including how cloud sync and a future Chrome extension fit in), and the
 [mockups artifact](https://claude.ai/artifact/7tuWyEE4KmrsbF38DiWKuJ) for a
 clickable prototype of all 9 screens.
 
 ## Tech Stack
 
 - **SwiftUI**, iOS native
-- **SwiftData** (or Core Data) for local, on-device storage — no backend, no
-  account system
+- **SwiftData** for local, on-device storage in v1 — no backend, no account
+  system yet
 - No third-party dependencies planned for v1
+- Architected behind repository protocols so a future cloud backend
+  (recommended: Supabase — see [`docs/SYSTEM_DESIGN.md`](docs/SYSTEM_DESIGN.md))
+  and a future Chrome extension are additive, not a rewrite
 
 ## Status
 
