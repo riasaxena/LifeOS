@@ -26,6 +26,9 @@ Pods/
 # macOS
 .DS_Store
 
+# JetBrains IDEs (IntelliJ, WebStorm, etc.)
+.idea/
+
 # Environment / secrets (e.g. future Oura API keys)
 .env
 Secrets.swift
