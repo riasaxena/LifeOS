@@ -22,69 +22,78 @@ work:
 - **IntelliJ / Xcode**: JetBrains has a PlantUML plugin; there's no native
   Xcode preview, VS Code or the web viewer are the easiest path.
 
+Note: GitHub does **not** render ` ```plantuml ` code fences as images on its
+own (it only auto-renders Mermaid) — the blocks below are the readable
+source, not a live diagram. If you want diagrams that render automatically
+on GitHub, the follow-up would be a small GitHub Action
+(e.g. `plantuml-action`) that converts `docs/diagrams/*.puml` to `.svg` on
+push and commits them — flagged as a nice-to-have, not done yet.
+
 ---
 
 ## 1. Component Architecture
 
-Shows the layering from `SYSTEM_DESIGN.md` §2 as a diagram: solid boxes are
-**built in v1**, dashed boxes are **future** (cloud backend, Chrome
-extension). The key thing this diagram is meant to make visually obvious:
-nothing above the "Data Layer" packages needs to change when the dashed
-boxes get built.
+Shows the layering from `SYSTEM_DESIGN.md` §2 as a diagram: shaded boxes are
+**future** (cloud backend, Chrome extension), everything else is **built in
+v1**. The key thing this diagram is meant to make visually obvious: nothing
+above the "Data Layer" packages needs to change when the shaded boxes get
+built.
 
 Source: [`docs/diagrams/component-architecture.puml`](diagrams/component-architecture.puml)
 
 ```plantuml
 @startuml component-architecture
-title LifeOS — Component Architecture (v1 local + future cloud)
+title LifeOS - Component Architecture (v1 local + future cloud)
 
 skinparam componentStyle rectangle
 skinparam linetype ortho
 
-package "iOS App" {
-  package "Presentation" {
+package "iOS App" as IOSApp {
+
+  package "Presentation" as Presentation {
     [SwiftUI Views] as Views
     [ViewModels] as VMs
   }
 
-  package "Domain" {
-    [Domain Models\n(Medicine, Contact, Hobby, PrepItem, ...)] as Domain
+  package "Domain" as Domain {
+    [Domain Models] as DomainModels
   }
 
-  package "Repository Protocols" {
+  package "Repository Protocols" as Protocols {
     interface MedicineRepository
     interface ContactRepository
     interface HobbyRepository
     interface PrepItemRepository
   }
 
-  package "Data Layer — v1 (built now)" {
+  package "Data Layer v1 (built now)" as DataV1 {
     [SwiftDataMedicineRepository] as SDMed
     [SwiftDataContactRepository] as SDContact
     [SwiftDataHobbyRepository] as SDHobby
     [SwiftDataPrepItemRepository] as SDPrep
-    database "SwiftData\n(on-device store)" as SwiftDataDB
+    database "SwiftData" as SwiftDataDB
   }
 
-  package "Data Layer — future (not built yet)" #line.dashed {
+  package "Data Layer - future" as DataFuture #F5F5F5 {
     [SupabaseContactRepository] as SBContact
     [SyncEngine] as Sync
-    [Outbox\n(pending mutations)] as Outbox
+    [Outbox] as Outbox
   }
+
 }
 
-package "Chrome Extension — future" #line.dashed {
+package "Chrome Extension - future" as ChromeExt #F5F5F5 {
   [Popup UI] as ExtUI
   [supabase-js client] as ExtClient
 }
 
-cloud "Supabase — future" #line.dashed {
+cloud "Supabase - future" as Supabase #F5F5F5 {
   [Postgres + Row Level Security] as Postgres
   [Supabase Auth] as Auth
 }
 
 Views --> VMs
-VMs --> Domain
+VMs --> DomainModels
 VMs --> MedicineRepository
 VMs --> ContactRepository
 VMs --> HobbyRepository
@@ -100,23 +109,29 @@ SDContact --> SwiftDataDB
 SDHobby --> SwiftDataDB
 SDPrep --> SwiftDataDB
 
-ContactRepository <|.. SBContact : "future swap-in,\nsame protocol"
-SBContact --> SwiftDataDB : reads (offline cache)
-SBContact --> Outbox : writes (queued)
+ContactRepository <|.. SBContact
+SBContact --> SwiftDataDB : reads
+SBContact --> Outbox : writes
 Outbox --> Sync
 Sync --> Postgres : push / pull
 
 ExtUI --> ExtClient
-ExtClient --> Postgres : same tables,\nsame RLS
+ExtClient --> Postgres
 ExtClient --> Auth
 
-Auth --> Postgres : "user_id = auth.uid()"
+Auth --> Postgres
 
-note right of "Data Layer — future (not built yet)"
+note right of DataFuture
   Nothing above this layer changes
-  when this is added — Views, VMs,
-  Domain models and the repository
+  when this is added. Views, VMs,
+  domain models and the repository
   protocols stay exactly as they are.
+end note
+
+note right of ChromeExt
+  Talks to the same Postgres tables
+  and the same auth session as the
+  iOS app. No separate API needed.
 end note
 
 @enduml
@@ -134,7 +149,7 @@ Source: [`docs/diagrams/data-model-erd.puml`](diagrams/data-model-erd.puml)
 
 ```plantuml
 @startuml data-model-erd
-title LifeOS — Data Model (mirrors local SwiftData now & Postgres schema later)
+title LifeOS - Data Model (mirrors local SwiftData now and Postgres schema later)
 
 hide circle
 skinparam linetype ortho
@@ -143,7 +158,7 @@ entity Medicine {
   * id : UUID <<PK>>
   --
   name : String
-  dosage : String?
+  dosage : String
   schedule_json : String
   created_at : Date
   updated_at : Date
@@ -154,7 +169,7 @@ entity MedicineLog {
   --
   medicine_id : UUID <<FK>>
   date : Date
-  taken_at : Date?
+  taken_at : Date
   created_at : Date
   updated_at : Date
 }
@@ -164,8 +179,8 @@ entity Workout {
   --
   date : Date
   type : WorkoutType
-  note : String?
-  duration : Int?
+  note : String
+  duration : Int
   created_at : Date
   updated_at : Date
 }
@@ -174,11 +189,11 @@ entity Contact {
   * id : UUID <<PK>>
   --
   name : String
-  category : "friend | networking"
-  preferred_medium : "call | email"
+  category : Category
+  preferred_medium : Medium
   cadence_days : Int
-  last_contacted_at : Date?
-  note : String?
+  last_contacted_at : Date
+  note : String
   created_at : Date
   updated_at : Date
 }
@@ -188,8 +203,8 @@ entity ContactLog {
   --
   contact_id : UUID <<FK>>
   date : Date
-  medium : "call | email"
-  note : String?
+  medium : Medium
+  note : String
   created_at : Date
   updated_at : Date
 }
@@ -198,9 +213,9 @@ entity Hobby {
   * id : UUID <<PK>>
   --
   name : String
-  status : "active | wantToTry"
+  status : HobbyStatus
   commute_friendly : Bool
-  notes : String?
+  notes : String
   created_at : Date
   updated_at : Date
 }
@@ -210,7 +225,7 @@ entity HobbyLog {
   --
   hobby_id : UUID <<FK>>
   date : Date
-  note : String?
+  note : String
   created_at : Date
   updated_at : Date
 }
@@ -219,12 +234,12 @@ entity PrepItem {
   * id : UUID <<PK>>
   --
   title : String
-  type : "article | podcast"
-  url : String?
+  type : PrepItemType
+  url : String
   topic : String
-  status : "queued | done"
+  status : PrepItemStatus
   added_at : Date
-  completed_at : Date?
+  completed_at : Date
   created_at : Date
   updated_at : Date
 }
@@ -235,13 +250,24 @@ Hobby ||--o{ HobbyLog
 
 note bottom of PrepItem
   The Home tab has no table of its own.
-  Its "Today" checklist (TaskItem) is
+  Its Today checklist (TaskItem) is
   computed at read time from Medicine(Log),
-  Contact(Log), Hobby(Log) and PrepItem —
+  Contact(Log), Hobby(Log) and PrepItem -
   never stored separately.
 end note
 
-note "Every table gets\nuser_id UUID + RLS policy\nwhen the cloud backend\nis added (§4.2 of SYSTEM_DESIGN.md)" as N1
+note as EnumsNote
+  Category = friend | networking
+  Medium = call | email
+  HobbyStatus = active | wantToTry
+  PrepItemType = article | podcast
+  PrepItemStatus = queued | done
+
+  Every table also gets a user_id UUID
+  and a Row Level Security policy when
+  the cloud backend is added
+  (see SYSTEM_DESIGN.md section 4.2).
+end note
 
 @enduml
 ```
@@ -259,7 +285,7 @@ Source: [`docs/diagrams/sync-sequence.puml`](diagrams/sync-sequence.puml)
 
 ```plantuml
 @startuml sync-sequence
-title LifeOS — Local Write & Cloud Sync (future v2 flow, not built in v1)
+title LifeOS - Local Write and Cloud Sync (future v2 flow, not built in v1)
 
 actor Ria
 participant "SwiftUI View" as View
@@ -288,13 +314,13 @@ Sync -> Outbox : clear entry
 Sync -> Cloud : pull changes\nsince last_synced_at
 Cloud --> Sync : rows changed by\nother devices/clients
 Sync -> Local : merge\n(last-write-wins on updated_at)
-Local --> VM : (via observation) UI reflects\nremote changes
+Local --> VM : UI reflects\nremote changes
 
 note over Sync, Cloud
   Conflict policy is deliberately simple:
   updated_at last-write-wins. Appropriate
-  for single-user personal data — see
-  SYSTEM_DESIGN.md §5.
+  for single-user personal data - see
+  SYSTEM_DESIGN.md section 5.
 end note
 
 @enduml
@@ -305,39 +331,39 @@ end note
 ## 4. Deployment (Future)
 
 Where each piece physically runs once cloud sync and the Chrome extension
-exist. In v1, only the "Ria's iPhone" node is populated — everything else on
-this diagram is future scope, shown dashed.
+exist. In v1, only "Ria's iPhone" is populated — everything else on this
+diagram is future scope, shown shaded.
 
 Source: [`docs/diagrams/deployment.puml`](diagrams/deployment.puml)
 
 ```plantuml
 @startuml deployment
-title LifeOS — Deployment (future state, cloud + extension added)
+title LifeOS - Deployment (future state, cloud + extension added)
 
-node "Ria's iPhone" {
-  [LifeOS iOS App]
-  database "SwiftData\n(local cache)" as SD
+node "Ria's iPhone" as IPhone {
+  [LifeOS iOS App] as IOSApp
+  database "SwiftData (local cache)" as SD
 }
 
-node "Ria's Chrome Browser" #line.dashed {
+node "Ria's Chrome Browser" as ChromeBrowser #F5F5F5 {
   [LifeOS Chrome Extension] as Ext
 }
 
-cloud "Supabase Cloud" #line.dashed {
-  [Postgres DB\n(RLS per user_id)] as PG
-  [Supabase Auth\n(Sign in with Apple / OAuth)] as Auth
+cloud "Supabase Cloud" as SupabaseCloud #F5F5F5 {
+  [Postgres DB] as PG
+  [Supabase Auth] as Auth
 }
 
-[LifeOS iOS App] --> SD : reads / writes\n(always, v1 and beyond)
-[LifeOS iOS App] ..> PG : sync over HTTPS\n(future)
-[LifeOS iOS App] ..> Auth : sign in\n(future)
+IOSApp --> SD : reads / writes (always)
+IOSApp ..> PG : sync over HTTPS (future)
+IOSApp ..> Auth : sign in (future)
 
-Ext ..> PG : REST + Realtime\n(future)
-Ext ..> Auth : OAuth session\n(future)
+Ext ..> PG : REST + Realtime (future)
+Ext ..> Auth : OAuth session (future)
 
 note bottom of SD
   v1 ships with ONLY this node
-  populated — everything else on
+  populated. Everything else on
   this diagram is future scope.
 end note
 
@@ -351,3 +377,4 @@ end note
 | Date | Change |
 |---|---|
 | 2026-09-21 | Initial HLD: component architecture, data model ERD, sync sequence, deployment — all PlantUML, all diagram source under `docs/diagrams/` |
+| 2026-09-21 | Fixed a syntax error (a `note` referencing a package by its quoted display name instead of an alias) and switched all diagrams to plain ASCII text and explicit aliases throughout, for reliable parsing in any PlantUML renderer |
