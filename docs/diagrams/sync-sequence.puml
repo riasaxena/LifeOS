@@ -1,0 +1,40 @@
+@startuml sync-sequence
+title LifeOS — Local Write & Cloud Sync (future v2 flow, not built in v1)
+
+actor Ria
+participant "SwiftUI View" as View
+participant "ViewModel" as VM
+participant "SupabaseContactRepository" as Repo
+database "SwiftData\n(local cache)" as Local
+participant "Outbox" as Outbox
+participant "SyncEngine" as Sync
+cloud "Supabase\n(Postgres + RLS)" as Cloud
+
+Ria -> View : Tap "Log a call"
+View -> VM : logContact(contact)
+VM -> Repo : logContact(contact)
+Repo -> Local : write ContactLog (instant)
+Repo -> Outbox : enqueue pending mutation
+Repo --> VM : return immediately
+VM --> View : UI updates (optimistic,\nfeels as fast as v1)
+
+== later, when online ==
+
+Sync -> Outbox : drain pending mutations
+Sync -> Cloud : push ContactLog (upsert)
+Cloud --> Sync : ack
+Sync -> Outbox : clear entry
+
+Sync -> Cloud : pull changes\nsince last_synced_at
+Cloud --> Sync : rows changed by\nother devices/clients
+Sync -> Local : merge\n(last-write-wins on updated_at)
+Local --> VM : (via observation) UI reflects\nremote changes
+
+note over Sync, Cloud
+  Conflict policy is deliberately simple:
+  updated_at last-write-wins. Appropriate
+  for single-user personal data — see
+  SYSTEM_DESIGN.md §5.
+end note
+
+@enduml

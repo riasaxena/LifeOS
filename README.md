@@ -29,7 +29,9 @@ the order left to right is Health, Social, **Home**, Hobbies, Career Prep.
 
 See [`docs/PRD.md`](docs/PRD.md) for the full product spec,
 [`docs/SYSTEM_DESIGN.md`](docs/SYSTEM_DESIGN.md) for the architecture
-(including how cloud sync and a future Chrome extension fit in), and the
+rationale (including how cloud sync and a future Chrome extension fit in),
+[`docs/HLD.md`](docs/HLD.md) for the PlantUML diagram set (component
+architecture, data model ERD, sync sequence, deployment), and the
 [mockups artifact](https://claude.ai/artifact/7tuWyEE4KmrsbF38DiWKuJ) for a
 clickable prototype of all 9 screens.
 

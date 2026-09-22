@@ -1,0 +1,31 @@
+@startuml deployment
+title LifeOS — Deployment (future state, cloud + extension added)
+
+node "Ria's iPhone" {
+  [LifeOS iOS App]
+  database "SwiftData\n(local cache)" as SD
+}
+
+node "Ria's Chrome Browser" #line.dashed {
+  [LifeOS Chrome Extension] as Ext
+}
+
+cloud "Supabase Cloud" #line.dashed {
+  [Postgres DB\n(RLS per user_id)] as PG
+  [Supabase Auth\n(Sign in with Apple / OAuth)] as Auth
+}
+
+[LifeOS iOS App] --> SD : reads / writes\n(always, v1 and beyond)
+[LifeOS iOS App] ..> PG : sync over HTTPS\n(future)
+[LifeOS iOS App] ..> Auth : sign in\n(future)
+
+Ext ..> PG : REST + Realtime\n(future)
+Ext ..> Auth : OAuth session\n(future)
+
+note bottom of SD
+  v1 ships with ONLY this node
+  populated — everything else on
+  this diagram is future scope.
+end note
+
+@enduml

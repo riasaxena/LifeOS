@@ -1,0 +1,111 @@
+@startuml data-model-erd
+title LifeOS — Data Model (mirrors local SwiftData now & Postgres schema later)
+
+hide circle
+skinparam linetype ortho
+
+entity Medicine {
+  * id : UUID <<PK>>
+  --
+  name : String
+  dosage : String?
+  schedule_json : String
+  created_at : Date
+  updated_at : Date
+}
+
+entity MedicineLog {
+  * id : UUID <<PK>>
+  --
+  medicine_id : UUID <<FK>>
+  date : Date
+  taken_at : Date?
+  created_at : Date
+  updated_at : Date
+}
+
+entity Workout {
+  * id : UUID <<PK>>
+  --
+  date : Date
+  type : WorkoutType
+  note : String?
+  duration : Int?
+  created_at : Date
+  updated_at : Date
+}
+
+entity Contact {
+  * id : UUID <<PK>>
+  --
+  name : String
+  category : "friend | networking"
+  preferred_medium : "call | email"
+  cadence_days : Int
+  last_contacted_at : Date?
+  note : String?
+  created_at : Date
+  updated_at : Date
+}
+
+entity ContactLog {
+  * id : UUID <<PK>>
+  --
+  contact_id : UUID <<FK>>
+  date : Date
+  medium : "call | email"
+  note : String?
+  created_at : Date
+  updated_at : Date
+}
+
+entity Hobby {
+  * id : UUID <<PK>>
+  --
+  name : String
+  status : "active | wantToTry"
+  commute_friendly : Bool
+  notes : String?
+  created_at : Date
+  updated_at : Date
+}
+
+entity HobbyLog {
+  * id : UUID <<PK>>
+  --
+  hobby_id : UUID <<FK>>
+  date : Date
+  note : String?
+  created_at : Date
+  updated_at : Date
+}
+
+entity PrepItem {
+  * id : UUID <<PK>>
+  --
+  title : String
+  type : "article | podcast"
+  url : String?
+  topic : String
+  status : "queued | done"
+  added_at : Date
+  completed_at : Date?
+  created_at : Date
+  updated_at : Date
+}
+
+Medicine ||--o{ MedicineLog
+Contact ||--o{ ContactLog
+Hobby ||--o{ HobbyLog
+
+note bottom of PrepItem
+  The Home tab has no table of its own.
+  Its "Today" checklist (TaskItem) is
+  computed at read time from Medicine(Log),
+  Contact(Log), Hobby(Log) and PrepItem —
+  never stored separately.
+end note
+
+note "Every table gets\nuser_id UUID + RLS policy\nwhen the cloud backend\nis added (§4.2 of SYSTEM_DESIGN.md)" as N1
+
+@enduml
