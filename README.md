@@ -27,11 +27,10 @@ the order left to right is Health, Social, **Home**, Hobbies, Career Prep.
 | **Hobbies** | Creative hobbies (current + want-to-try) surfaced as a suggestion for the evening BART commute, with an Add Hobby flow |
 | **Career Prep** | Queue of articles and podcasts for interview prep / industry reading, surfaced for the morning BART commute, with an Add Item flow |
 
-See [`docs/PRD.md`](docs/PRD.md) for the full product spec,
-[`docs/SYSTEM_DESIGN.md`](docs/SYSTEM_DESIGN.md) for the architecture
-rationale (including how cloud sync and a future Chrome extension fit in),
-[`docs/HLD.md`](docs/HLD.md) for the PlantUML diagram set (component
-architecture, data model ERD, sync sequence, deployment), and the
+See [`docs/PRD.md`](docs/PRD.md) for the product spec,
+[`docs/HLD.md`](docs/HLD.md) for a short architecture summary,
+[`docs/SYSTEM_DESIGN.md`](docs/SYSTEM_DESIGN.md) for the full rationale
+(including how cloud sync and a future Chrome extension fit in), and the
 [mockups artifact](https://claude.ai/artifact/7tuWyEE4KmrsbF38DiWKuJ) for a
 clickable prototype of all 9 screens.
 
