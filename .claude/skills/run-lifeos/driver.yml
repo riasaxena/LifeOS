@@ -1,0 +1,36 @@
+# XcodeGen spec for the agent driver: the app's own project.yml plus an
+# XCUITest bundle that executes DRIVER_STEPS. Generated into a scratch dir by
+# driver.sh, so the product project never gains a test target.
+include:
+  - path: ../../../project.yml
+    relativePaths: true
+
+targets:
+  LifeOS:
+    # info.path becomes INFOPLIST_FILE relative to the *project* dir, which is
+    # $OUT/proj here, not the repo - point it back (LIFEOS_ROOT set by driver.sh).
+    settings:
+      base:
+        INFOPLIST_FILE: ${LIFEOS_ROOT}/App/Sources/Info.plist
+  DriverUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - path: DriverUITests
+    dependencies:
+      - target: LifeOS
+    settings:
+      base:
+        TEST_TARGET_NAME: LifeOS
+        PRODUCT_BUNDLE_IDENTIFIER: com.riasaxena.lifeos.driver
+        GENERATE_INFOPLIST_FILE: YES
+
+schemes:
+  LifeOSDriver:
+    build:
+      targets:
+        LifeOS: all
+        DriverUITests: [test]
+    test:
+      targets:
+        - DriverUITests
