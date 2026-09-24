@@ -46,16 +46,23 @@ clickable prototype of all 9 screens.
 
 ## Status
 
-🚧 Design phase — PRD and mockups drafted, Xcode project not yet started.
+🚧 Scaffolded — SwiftUI + SwiftData source for all 5 tabs is written (see
+`App/Sources`), not yet build-verified in Xcode.
 
-## Getting Started (once code exists)
+## Getting Started
 
-1. Open `LifeOS.xcodeproj` (or `.xcworkspace`) in Xcode.
-2. Select your iPhone as the run destination.
-3. Sign the app with your own Apple ID (free provisioning is fine for
-   personal sideloading — apps expire after 7 days and need re-installing
-   from Xcode; a paid Apple Developer account extends that to a year).
-4. Build & run.
+See [`SETUP.md`](SETUP.md) for the full walkthrough. Short version:
+
+```bash
+brew install xcodegen
+xcodegen generate
+open LifeOS.xcodeproj
+```
+
+Then pick your team under Signing & Capabilities, select your iPhone (free
+provisioning is fine for personal sideloading — apps expire after 7 days
+and need re-installing from Xcode; a paid Apple Developer account extends
+that to a year), and Build & Run.
 
 ## Roadmap / Future Upgrades
 
