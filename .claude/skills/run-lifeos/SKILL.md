@@ -31,6 +31,9 @@ All paths below are relative to the repo root.
 .claude/skills/run-lifeos/driver.sh drive "tab:Health;text:1-day streak;shot:streak;back;tab:Hobbies;tree:hobbies"
 .claude/skills/run-lifeos/driver.sh drive "tab:Hobbies;tap:Add a hobby;field:Name;type:Pottery;shot:add-hobby;tap:Cancel;shot:after-cancel"
 
+# Add, then delete via long-press (every added item has a Delete context menu)
+SIM="iPhone 17" .claude/skills/run-lifeos/driver.sh drive "tab:Health;tap:Add a medicine;field:Name;type:Magnesium;field:Dosage (optional);type:200mg;tap:Save;shot:med-added;hold:Magnesium;tap:Delete;shot:med-deleted"
+
 # Screenshot whatever is on screen now (no rebuild)
 .claude/skills/run-lifeos/driver.sh shot check
 ```
@@ -41,7 +44,8 @@ Steps (full list in `DriverUITests/DriverUITests.swift`):
 |---|---|
 | `tab:<Health\|Social\|Home\|Hobbies\|Career>` | tap a tab bar item |
 | `tap:<label>` | tap a button by its label or identifier |
-| `text:<label>` | tap a static text, e.g. the streak banner |
+| `text:<label>` | tap a static text, e.g. the streak banner or a workout tile |
+| `hold:<label>` | long-press a static text to open its context menu (then `tap:Delete`) |
 | `field:<placeholder>` / `type:<text>` | focus a text field and type into it |
 | `back` | tap the navigation bar back button |
 | `shot:<name>` / `tree:<name>` | save a PNG or an accessibility dump to `shots/` |
@@ -55,8 +59,10 @@ relaunches the app, rebuilds only what changed (about 30s warm), and prints
 
 Other commands: `driver.sh stop` terminates the app. `driver.sh reset`
 uninstalls it, which **wipes all SwiftData data**, so the sample data from
-`Support/SeedData.swift` is loaded again on the next launch. The user may be
-using the same simulator by hand, so ask before running `reset`.
+`Support/SeedData.swift` is loaded again on the next driver launch. The user
+may be using the same simulator by hand, so ask before running `reset`. For
+flows that add or delete data, use a different simulator
+(`SIM="iPhone 17"`) so the user's data stays untouched.
 
 ## Run (human path)
 
@@ -73,9 +79,16 @@ press Run in Xcode.
   from an empty dict to the full CFBundle keys taken from `project.yml`'s
   `info:` section. That includes the driver's generate step, so expect that
   file to show as modified. Leave it alone; it is not your change.
-- **Seed data only loads into an empty store.** After anyone uses the app,
-  screens stop matching `SeedData.swift`. Don't assert on specific
-  checked/unchecked states unless you ran `reset` first.
+- **Sample data is opt-in.** It loads only when the app is launched with
+  `-seedSampleData`, and only into an empty store. Both `driver.sh run` and
+  `drive` pass the flag. A plain Xcode/phone install starts empty by
+  design. To see the empty state, install
+  `$TMPDIR/lifeos-driver/dd/Build/Products/Debug-iphonesimulator/LifeOS.app`
+  on a fresh simulator with `xcrun simctl install`, then run
+  `xcrun simctl launch <udid> com.riasaxena.lifeos` without the flag.
+  After anyone uses the app, screens stop matching `SeedData.swift`.
+- **Buttons whose label includes an emoji don't match `tap:`.** Workout
+  tiles are exposed as `"🧘, Hot Yoga"`, so use `text:Hot Yoga`.
 - Buttons with only an icon expose their SF Symbol name as their
   identifier. For example, the Hobbies "+" button has identifier `plus` and
   label `Add`.

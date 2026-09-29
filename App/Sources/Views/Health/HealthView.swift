@@ -2,14 +2,24 @@ import SwiftUI
 
 struct HealthView: View {
     @State var viewModel: HealthViewModel
+    @State private var showingAddMedicine = false
 
     var body: some View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
-                    Text("Health")
-                        .font(.largeTitle.bold())
-                        .foregroundStyle(Theme.textPrimary)
+                    HStack(alignment: .top) {
+                        Text("Health")
+                            .font(.largeTitle.bold())
+                            .foregroundStyle(Theme.textPrimary)
+                        Spacer()
+                        Button { showingAddMedicine = true } label: {
+                            Image(systemName: "plus")
+                                .foregroundStyle(.white)
+                                .padding(10)
+                                .background(Theme.textPrimary, in: Circle())
+                        }
+                    }
 
                     NavigationLink {
                         StreakDetailView(viewModel: viewModel)
@@ -25,6 +35,9 @@ struct HealthView: View {
             }
             .background(Theme.background)
             .navigationBarHidden(true)
+            .sheet(isPresented: $showingAddMedicine) {
+                AddMedicineView(viewModel: viewModel)
+            }
         }
         .task { viewModel.load() }
     }
@@ -50,28 +63,50 @@ struct HealthView: View {
     private var medicineSection: some View {
         VStack(alignment: .leading, spacing: 10) {
             Text("Medicine").font(.headline).foregroundStyle(Theme.textPrimary)
-            ForEach(viewModel.todaysLogs, id: \.id) { log in
-                if let medicine = log.medicine {
-                    HStack(spacing: 12) {
-                        Image(systemName: log.isTaken ? "checkmark.circle.fill" : "circle")
-                            .foregroundStyle(log.isTaken ? Theme.success : Theme.accent)
-                        VStack(alignment: .leading, spacing: 1) {
-                            Text(medicine.name).font(.subheadline.weight(.semibold)).foregroundStyle(Theme.textPrimary)
-                            Text(log.isTaken ? "Taken" : "Not yet taken")
-                                .font(.caption).foregroundStyle(Theme.textSecondary)
-                        }
-                        Spacer()
-                        if !log.isTaken {
-                            Button("Mark taken") { viewModel.markTaken(medicine) }
-                                .font(.caption.weight(.bold))
-                                .buttonStyle(.bordered)
-                                .tint(Theme.accent)
+            ForEach(viewModel.medicines) { medicine in
+                medicineRow(medicine, log: viewModel.todaysLog(for: medicine))
+                    .contextMenu {
+                        Button("Delete", systemImage: "trash", role: .destructive) {
+                            viewModel.deleteMedicine(medicine)
                         }
                     }
-                    .card(fill: log.isTaken ? Theme.card : Theme.warnSoft, border: log.isTaken ? Theme.cardBorder : Theme.warnBorder)
-                }
+            }
+
+            Button {
+                showingAddMedicine = true
+            } label: {
+                Label("Add a medicine", systemImage: "plus")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(Theme.textSecondary)
+                    .frame(maxWidth: .infinity)
+                    .padding(14)
+            }
+            .overlay(RoundedRectangle(cornerRadius: 16).strokeBorder(Theme.cardBorder, style: StrokeStyle(lineWidth: 1, dash: [5])))
+        }
+    }
+
+    /// `log` is nil when the medicine isn't scheduled for today.
+    private func medicineRow(_ medicine: Medicine, log: MedicineLog?) -> some View {
+        let isTaken = log?.isTaken == true
+        let isDue = log != nil && !isTaken
+        let status = log == nil ? "Not due today" : (isTaken ? "Taken" : "Not yet taken")
+        return HStack(spacing: 12) {
+            Image(systemName: isTaken ? "checkmark.circle.fill" : "circle")
+                .foregroundStyle(isTaken ? Theme.success : (isDue ? Theme.accent : Theme.textSecondary))
+            VStack(alignment: .leading, spacing: 1) {
+                Text(medicine.name).font(.subheadline.weight(.semibold)).foregroundStyle(Theme.textPrimary)
+                Text([status, medicine.dosage].compactMap { $0 }.joined(separator: " - "))
+                    .font(.caption).foregroundStyle(Theme.textSecondary)
+            }
+            Spacer()
+            if isDue {
+                Button("Mark taken") { viewModel.markTaken(medicine) }
+                    .font(.caption.weight(.bold))
+                    .buttonStyle(.bordered)
+                    .tint(Theme.accent)
             }
         }
+        .card(fill: isDue ? Theme.warnSoft : Theme.card, border: isDue ? Theme.warnBorder : Theme.cardBorder)
     }
 
     private var workoutSection: some View {

@@ -5,6 +5,7 @@ import SwiftData
 protocol WorkoutRepository {
     func workout(on date: Date) throws -> Workout?
     func logWorkout(type: WorkoutType, on date: Date, note: String?) throws
+    func clearWorkout(on date: Date) throws
     /// Most recent `days` days, newest first, true if a non-rest workout was logged.
     func workoutHistory(days: Int) throws -> [(date: Date, worked: Bool)]
 }
@@ -32,6 +33,12 @@ final class SwiftDataWorkoutRepository: WorkoutRepository {
         } else {
             context.insert(Workout(date: start, type: type, note: note))
         }
+        try context.save()
+    }
+
+    func clearWorkout(on date: Date) throws {
+        guard let existing = try workout(on: date) else { return }
+        context.delete(existing)
         try context.save()
     }
 

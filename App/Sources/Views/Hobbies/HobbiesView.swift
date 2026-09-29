@@ -35,6 +35,11 @@ struct HobbiesView: View {
                             HobbyRow(hobby: hobby) {
                                 viewModel.logToday(hobby)
                             }
+                            .contextMenu {
+                                Button("Delete", systemImage: "trash", role: .destructive) {
+                                    viewModel.deleteHobby(hobby)
+                                }
+                            }
                         }
 
                         Button {

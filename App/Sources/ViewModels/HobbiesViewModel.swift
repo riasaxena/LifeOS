@@ -31,6 +31,15 @@ final class HobbiesViewModel {
         }
     }
 
+    func deleteHobby(_ hobby: Hobby) {
+        do {
+            try repo.deleteHobby(hobby)
+            load()
+        } catch {
+            print("deleteHobby failed: \(error)")
+        }
+    }
+
     func addHobby(name: String, status: HobbyStatus, commuteFriendly: Bool, notes: String?) {
         guard !name.trimmingCharacters(in: .whitespaces).isEmpty else { return }
         let hobby = Hobby(name: name, status: status, commuteFriendly: commuteFriendly, notes: notes?.isEmpty == true ? nil : notes)

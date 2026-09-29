@@ -8,6 +8,8 @@ import SwiftData
 protocol MedicineRepository {
     func allMedicines() throws -> [Medicine]
     func addMedicine(_ medicine: Medicine) throws
+    /// Also deletes the medicine's logs (cascade).
+    func deleteMedicine(_ medicine: Medicine) throws
     func logsForToday() throws -> [MedicineLog]
     func markTaken(_ medicine: Medicine, on date: Date) throws
     /// Days, most recent first, where every medicine due that day had a log
@@ -29,6 +31,11 @@ final class SwiftDataMedicineRepository: MedicineRepository {
 
     func addMedicine(_ medicine: Medicine) throws {
         context.insert(medicine)
+        try context.save()
+    }
+
+    func deleteMedicine(_ medicine: Medicine) throws {
+        context.delete(medicine)
         try context.save()
     }
 

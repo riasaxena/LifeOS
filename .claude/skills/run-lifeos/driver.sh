@@ -62,7 +62,7 @@ case "$cmd" in
     xb build
     xcrun simctl install "$U" "$OUT/dd/Build/Products/Debug-iphonesimulator/LifeOS.app"
     xcrun simctl terminate "$U" "$BUNDLE_ID" 2>/dev/null || true
-    xcrun simctl launch "$U" "$BUNDLE_ID" >/dev/null
+    xcrun simctl launch "$U" "$BUNDLE_ID" -seedSampleData >/dev/null  # seeds only an empty store
     sleep 4
     xcrun simctl io "$U" screenshot "$OUT/launch.png" >/dev/null 2>&1
     log "launched; screenshot: $OUT/launch.png"

@@ -1,12 +1,16 @@
 import Foundation
 import SwiftData
 
-/// Inserts a small set of sample data on first launch so the app isn't
-/// empty out of the box - mirrors the mockups artifact linked from the
-/// repo README. Safe to call every launch; it no-ops once anything exists.
+/// Inserts a small set of sample data (mirrors the mockups artifact linked
+/// from the repo README) - only when launched with `-seedSampleData`, so a
+/// real install starts empty. The Simulator driver passes the flag. Safe to
+/// call every launch; it no-ops once anything exists.
 @MainActor
 enum SeedData {
+    static let launchArgument = "-seedSampleData"
+
     static func populateIfNeeded(context: ModelContext) {
+        guard ProcessInfo.processInfo.arguments.contains(launchArgument) else { return }
         let existing = try? context.fetchCount(FetchDescriptor<Medicine>())
         guard existing == 0 else { return }
 

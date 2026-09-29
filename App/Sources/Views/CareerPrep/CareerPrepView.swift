@@ -26,6 +26,11 @@ struct CareerPrepView: View {
 
                     if let upNext = viewModel.upNext {
                         upNextCard(upNext)
+                            .contextMenu {
+                                Button("Delete", systemImage: "trash", role: .destructive) {
+                                    viewModel.deleteItem(upNext)
+                                }
+                            }
                     }
 
                     if !viewModel.restOfQueue.isEmpty {
@@ -34,6 +39,11 @@ struct CareerPrepView: View {
                             ForEach(viewModel.restOfQueue) { item in
                                 PrepItemRow(item: item) {
                                     viewModel.markDone(item)
+                                }
+                                .contextMenu {
+                                    Button("Delete", systemImage: "trash", role: .destructive) {
+                                        viewModel.deleteItem(item)
+                                    }
                                 }
                             }
                         }
@@ -60,6 +70,11 @@ struct CareerPrepView: View {
                                     Spacer()
                                 }
                                 .padding(.horizontal, 4)
+                                .contextMenu {
+                                    Button("Delete", systemImage: "trash", role: .destructive) {
+                                        viewModel.deleteItem(item)
+                                    }
+                                }
                             }
                         }
                     }

@@ -5,6 +5,8 @@ import SwiftData
 protocol ContactRepository {
     func allContacts(category: ContactCategory) throws -> [Contact]
     func addContact(_ contact: Contact) throws
+    /// Also deletes the contact's logs (cascade).
+    func deleteContact(_ contact: Contact) throws
     func logContact(_ contact: Contact, medium: ContactMedium, note: String?) throws
 }
 
@@ -30,6 +32,11 @@ final class SwiftDataContactRepository: ContactRepository {
 
     func addContact(_ contact: Contact) throws {
         context.insert(contact)
+        try context.save()
+    }
+
+    func deleteContact(_ contact: Contact) throws {
+        context.delete(contact)
         try context.save()
     }
 

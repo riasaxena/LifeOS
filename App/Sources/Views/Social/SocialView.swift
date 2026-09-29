@@ -35,6 +35,11 @@ struct SocialView: View {
                             ContactRow(contact: contact) {
                                 viewModel.logCall(contact)
                             }
+                            .contextMenu {
+                                Button("Delete", systemImage: "trash", role: .destructive) {
+                                    viewModel.deletePerson(contact)
+                                }
+                            }
                         }
 
                         Button {

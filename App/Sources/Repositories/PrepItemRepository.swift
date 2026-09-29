@@ -6,6 +6,7 @@ protocol PrepItemRepository {
     func queue() throws -> [PrepItem]
     func recentlyCompleted(limit: Int) throws -> [PrepItem]
     func addItem(_ item: PrepItem) throws
+    func deleteItem(_ item: PrepItem) throws
     func markDone(_ item: PrepItem) throws
 }
 
@@ -38,6 +39,11 @@ final class SwiftDataPrepItemRepository: PrepItemRepository {
 
     func addItem(_ item: PrepItem) throws {
         context.insert(item)
+        try context.save()
+    }
+
+    func deleteItem(_ item: PrepItem) throws {
+        context.delete(item)
         try context.save()
     }
 

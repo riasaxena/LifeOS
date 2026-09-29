@@ -5,6 +5,8 @@ import SwiftData
 protocol HobbyRepository {
     func allHobbies() throws -> [Hobby]
     func addHobby(_ hobby: Hobby) throws
+    /// Also deletes the hobby's logs (cascade).
+    func deleteHobby(_ hobby: Hobby) throws
     func logHobby(_ hobby: Hobby, note: String?) throws
     /// A commute-friendly hobby, preferring ones not logged recently.
     func tonightsSuggestion() throws -> Hobby?
@@ -24,6 +26,11 @@ final class SwiftDataHobbyRepository: HobbyRepository {
 
     func addHobby(_ hobby: Hobby) throws {
         context.insert(hobby)
+        try context.save()
+    }
+
+    func deleteHobby(_ hobby: Hobby) throws {
+        context.delete(hobby)
         try context.save()
     }
 

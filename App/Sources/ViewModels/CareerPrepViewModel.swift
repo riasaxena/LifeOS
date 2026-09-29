@@ -34,6 +34,15 @@ final class CareerPrepViewModel {
         }
     }
 
+    func deleteItem(_ item: PrepItem) {
+        do {
+            try repo.deleteItem(item)
+            load()
+        } catch {
+            print("deleteItem failed: \(error)")
+        }
+    }
+
     func addItem(title: String, type: PrepItemType, url: String?, topic: String) {
         guard !title.trimmingCharacters(in: .whitespaces).isEmpty else { return }
         let item = PrepItem(title: title, type: type, url: url?.isEmpty == true ? nil : url, topic: topic)

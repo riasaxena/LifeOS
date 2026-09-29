@@ -8,6 +8,7 @@ import XCTest
 ///   tab:<label>      tap a tab bar item (Health, Social, Home, Hobbies, Career)
 ///   tap:<label>      tap the first button with that label / identifier
 ///   text:<label>     tap the first static text with that label
+///   hold:<label>     long-press the first static text with that label (context menu)
 ///   type:<text>      type into the currently focused field
 ///   field:<label>    tap the first text field whose placeholder/label matches
 ///   back             tap the nav bar back button
@@ -23,6 +24,7 @@ final class DriverUITests: XCTestCase {
         try FileManager.default.createDirectory(atPath: shotDir, withIntermediateDirectories: true)
 
         let app = XCUIApplication()
+        app.launchArguments = ["-seedSampleData"] // only takes effect on an empty store
         app.launch()
         XCTAssertTrue(app.tabBars.firstMatch.waitForExistence(timeout: 15), "tab bar never appeared")
 
@@ -37,6 +39,13 @@ final class DriverUITests: XCTestCase {
                 try tapOrFail(app.buttons[arg].firstMatch, step)
             case "text":
                 try tapOrFail(app.staticTexts[arg].firstMatch, step)
+            case "hold":
+                let el = app.staticTexts[arg].firstMatch
+                guard el.waitForExistence(timeout: 5) else {
+                    XCTFail("DRIVER no element for step '\(step)' - run with 'tree' to see labels")
+                    throw XCTSkip("aborting")
+                }
+                el.press(forDuration: 1.0)
             case "field":
                 try tapOrFail(app.textFields[arg].firstMatch, step)
             case "type":

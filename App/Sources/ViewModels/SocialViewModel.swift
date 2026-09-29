@@ -36,6 +36,15 @@ final class SocialViewModel {
         }
     }
 
+    func deletePerson(_ contact: Contact) {
+        do {
+            try repo.deleteContact(contact)
+            load()
+        } catch {
+            print("deletePerson failed: \(error)")
+        }
+    }
+
     func addPerson(
         name: String,
         category: ContactCategory,

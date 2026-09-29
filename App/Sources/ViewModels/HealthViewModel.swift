@@ -40,9 +40,39 @@ final class HealthViewModel {
         }
     }
 
+    /// Today's log for a medicine, if it's due today.
+    func todaysLog(for medicine: Medicine) -> MedicineLog? {
+        todaysLogs.first { $0.medicine?.id == medicine.id }
+    }
+
+    func addMedicine(name: String, dosage: String?, scheduleDays: [Int]) {
+        guard !name.trimmingCharacters(in: .whitespaces).isEmpty, !scheduleDays.isEmpty else { return }
+        let medicine = Medicine(name: name, dosage: dosage?.isEmpty == true ? nil : dosage, scheduleDays: scheduleDays)
+        do {
+            try medicineRepo.addMedicine(medicine)
+            load()
+        } catch {
+            print("addMedicine failed: \(error)")
+        }
+    }
+
+    func deleteMedicine(_ medicine: Medicine) {
+        do {
+            try medicineRepo.deleteMedicine(medicine)
+            load()
+        } catch {
+            print("deleteMedicine failed: \(error)")
+        }
+    }
+
+    /// Tapping today's already-selected workout clears it.
     func logWorkout(_ type: WorkoutType) {
         do {
-            try workoutRepo.logWorkout(type: type, on: .now, note: nil)
+            if todaysWorkout?.type == type {
+                try workoutRepo.clearWorkout(on: .now)
+            } else {
+                try workoutRepo.logWorkout(type: type, on: .now, note: nil)
+            }
             load()
         } catch {
             print("logWorkout failed: \(error)")
