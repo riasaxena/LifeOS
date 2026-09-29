@@ -22,18 +22,26 @@ struct Repositories {
 }
 
 struct RootTabView: View {
+    enum Tab: Hashable {
+        case health, social, home, hobbies, career
+    }
+
     @Environment(\.modelContext) private var modelContext
     @State private var repos: Repositories?
+    /// Home sits in the middle of the tab bar but is the landing tab.
+    @State private var selectedTab: Tab = .home
 
     var body: some View {
         Group {
             if let repos {
-                TabView {
+                TabView(selection: $selectedTab) {
                     HealthView(viewModel: HealthViewModel(medicineRepo: repos.medicine, workoutRepo: repos.workout))
                         .tabItem { Label("Health", systemImage: "heart") }
+                        .tag(Tab.health)
 
                     SocialView(viewModel: SocialViewModel(repo: repos.contact))
                         .tabItem { Label("Social", systemImage: "person.2") }
+                        .tag(Tab.social)
 
                     HomeView(viewModel: HomeViewModel(
                         medicineRepo: repos.medicine,
@@ -43,12 +51,15 @@ struct RootTabView: View {
                         prepItemRepo: repos.prepItem
                     ))
                         .tabItem { Label("Home", systemImage: "house") }
+                        .tag(Tab.home)
 
                     HobbiesView(viewModel: HobbiesViewModel(repo: repos.hobby))
                         .tabItem { Label("Hobbies", systemImage: "paintpalette") }
+                        .tag(Tab.hobbies)
 
                     CareerPrepView(viewModel: CareerPrepViewModel(repo: repos.prepItem))
                         .tabItem { Label("Career", systemImage: "book") }
+                        .tag(Tab.career)
                 }
                 .tint(Theme.accent)
             } else {
