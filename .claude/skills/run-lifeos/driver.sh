@@ -78,7 +78,7 @@ case "$cmd" in
     U=$(udid); xcrun simctl io "$U" screenshot "$OUT/${1:-shot}.png" >/dev/null 2>&1
     echo "$OUT/${1:-shot}.png"
     ;;
-  reset) U=$(udid); xcrun simctl uninstall "$U" "$BUNDLE_ID"; log "uninstalled (data wiped)";;
+  reset) U=$(boot); xcrun simctl uninstall "$U" "$BUNDLE_ID"; log "uninstalled (data wiped)";;
   stop)  U=$(udid); xcrun simctl terminate "$U" "$BUNDLE_ID" || true;;
   *) sed -n '2,9p' "$0"; exit 1;;
 esac
