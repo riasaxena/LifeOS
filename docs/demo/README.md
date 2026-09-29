@@ -4,6 +4,9 @@ One pass through a day in LifeOS, recorded in the iOS Simulator (iPhone 17,
 iOS 26) from the built-in sample data. Each screenshot shows the screen
 *after* the step in its caption.
 
+Prefer to watch? The same flow is in [`lifeos-demo.mp4`](lifeos-demo.mp4)
+(78 s), and a 1.5× GIF version is at the top of the [main README](../../README.md).
+
 ## Home: the day starts
 
 <table>

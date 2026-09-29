@@ -7,6 +7,18 @@ that's actually easy to keep up with.
 Built for personal use only. Not distributed on the App Store — sideloaded
 via Xcode onto a personal iPhone.
 
+## Demo
+
+<p align="center">
+  <img src="docs/demo/lifeos-demo.gif" width="300" alt="LifeOS demo: checking off a medicine, adding one, logging a call, adding a person, logging a hobby, finishing and deleting career items, then back to Home">
+</p>
+
+A run through all 5 tabs in the iOS Simulator, shown at 1.5× speed:
+mark a medicine taken, add a new one, log a call, add a person, log tonight's
+hobby, finish and delete career items, then back to Home. You can also watch
+the [full-speed video](docs/demo/lifeos-demo.mp4) or read the
+[step-by-step walkthrough](docs/demo/README.md).
+
 ## Why
 
 Notes get captured everywhere but rarely turned into action. To-do-list-style
@@ -46,8 +58,9 @@ clickable prototype of all 9 screens.
 
 ## Status
 
-🚧 Scaffolded — SwiftUI + SwiftData source for all 5 tabs is written (see
-`App/Sources`), not yet build-verified in Xcode.
+🚧 In progress: all 5 tabs build and run in the iOS Simulator (see the
+[demo](#demo)), with adding and deleting on every tab. It hasn't been
+installed on a physical iPhone yet.
 
 ## Getting Started
 
